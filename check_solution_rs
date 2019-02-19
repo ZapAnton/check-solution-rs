@@ -10,8 +10,8 @@ download_solution () {
 	local solution_uuid="$1"
 
 	local solution_dir="$(exercism download --uuid="$solution_uuid" 2> /dev/null)"
-
-    local download_status="$?"
+    
+	local download_status="$?"
 
 	if [ "$download_status" -ne 0 ]; then
 		echo "Failed to download the exercise. Error code: "$download_status""
@@ -22,12 +22,28 @@ download_solution () {
 	echo "$solution_dir"
 }
 
+clean_solution_files () {
+	local exercise_name="${PWD##*/}"
+
+	local test_file="tests/$exercise_name.rs"
+
+	sed -i -e "/ignore/d" "$test_file"
+
+	if [ "$?" -ne 0 ]; then
+		echo "Failed to clean the solution test file. Aborting."
+	fi
+}
+
 if [ "$#" -ne 1 ]; then
 	print_usage
 
 	exit 1
-else
-	solution_dir="$(download_solution "$1")"
-
-	echo "Downloaded to the dir: $solution_dir"
 fi
+
+solution_dir="$(download_solution "$1")"
+
+(
+	cd "$solution_dir"
+
+	clean_solution_files
+)
