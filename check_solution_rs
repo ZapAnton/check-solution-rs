@@ -34,6 +34,16 @@ clean_solution_files () {
 	fi
 }
 
+run_tests () {
+	cargo test --quiet > /dev/null 2>&1
+
+	if [ "$?" -ne 0 ]; then
+		echo "Error: Some tests have failed!"
+	else
+		echo "All the tests have passed!"
+	fi
+}
+
 if [ "$#" -ne 1 ]; then
 	print_usage
 
@@ -42,8 +52,12 @@ fi
 
 solution_dir="$(download_solution "$1")"
 
+printf "Downloaded to\n%s\n\n" "$solution_dir"
+
 (
 	cd "$solution_dir"
 
 	clean_solution_files
+
+	run_tests
 )
