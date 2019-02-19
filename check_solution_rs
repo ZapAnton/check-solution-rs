@@ -2,110 +2,110 @@
 
 
 print_usage () {
-	echo -e "Usage:\n$(basename "$0") <UUID>"
+    echo -e "Usage:\n$(basename "$0") <UUID>"
 }
 
 
 download_solution () {
-	local solution_uuid="$1"
+    local solution_uuid="$1"
 
-	local solution_dir="$(exercism download --uuid="$solution_uuid" 2> /dev/null)"
+    local solution_dir="$(exercism download --uuid="$solution_uuid" 2> /dev/null)"
     
-	local download_status="$?"
+    local download_status="$?"
 
-	if [ "$download_status" -ne 0 ]; then
-		echo "Failed to download the exercise. Error code: "$download_status""
+    if [ "$download_status" -ne 0 ]; then
+        echo "Failed to download the exercise. Error code: "$download_status""
 
-		exit 1
-	fi
+        exit 1
+    fi
 
-	echo "$solution_dir"
+    echo "$solution_dir"
 }
 
 
 clean_solution_files () {
-	local exercise_name="${PWD##*/}"
+    local exercise_name="${PWD##*/}"
 
-	local test_file="tests/$exercise_name.rs"
+    local test_file="tests/$exercise_name.rs"
 
-	sed -i -e "/ignore/d" "$test_file"
+    sed -i -e "/ignore/d" "$test_file"
 
-	if [ "$?" -ne 0 ]; then
-		echo "Failed to clean the solution test file. Aborting."
-	fi
+    if [ "$?" -ne 0 ]; then
+        echo "Failed to clean the solution test file. Aborting."
+    fi
 }
 
 
 run_tests () {
-	cargo test --quiet > /dev/null 2>&1
+    cargo test --quiet > /dev/null 2>&1
 
-	if [ "$?" -ne 0 ]; then
-		echo "Error: Some tests have failed!"
-	else
-		echo "All the tests have passed!"
-	fi
+    if [ "$?" -ne 0 ]; then
+        echo "Error: Some tests have failed!"
+    else
+        echo "All the tests have passed!"
+    fi
 }
 
 
 occurrences_number () {
-	local string="$1"
+    local string="$1"
 
-	local sub="$2"
+    local sub="$2"
 
-	local s=${string//"$sub"}
+    local s=${string//"$sub"}
 
-	echo "$((("${#string}" - "${#s}") / "${#sub}"))"
+    echo "$((("${#string}" - "${#s}") / "${#sub}"))"
 }
 
 
 analyze_pythagorean_triplet () {
-	local solution_path="src/lib.rs"
+    local solution_path="src/lib.rs"
 
-	local solution="$(<"$solution_path")"
+    local solution="$(<"$solution_path")"
 
-	local mut_num="$(occurrences_number "$solution" "mut")"
+    local mut_num="$(occurrences_number "$solution" "mut")"
 
-	local for_num="$(occurrences_number "$solution" "for")"
+    local for_num="$(occurrences_number "$solution" "for")"
 
-	if [ "$mut_num" -gt 1 ]; then
-		printf "\nWarning: big number of mutable variables (%s).\n" "$mut_num"
+    if [ "$mut_num" -gt 1 ]; then
+        printf "\nWarning: big number of mutable variables (%s).\n" "$mut_num"
     fi
 
-	if [ "$for_num" -gt 2 ]; then
-		printf "\nWarning: big number of for loops (%s).\n" "$for_num"
+    if [ "$for_num" -gt 2 ]; then
+        printf "\nWarning: big number of for loops (%s).\n" "$for_num"
     fi
 
-	echo "$solution" | grep -E "(\b\w+\b) *\* *(\b\1\b)" > /dev/null
+    echo "$solution" | grep -E "(\b\w+\b) *\* *(\b\1\b)" > /dev/null
 
-	if [ "$?" -eq 0 ]; then
-		printf "\nMentor notes warning: Found the occurrence of the 'a*a' construct.\n"
-	fi
+    if [ "$?" -eq 0 ]; then
+        printf "\nMentor notes warning: Found the occurrence of the 'a*a' construct.\n"
+    fi
 
-	echo "$solution" | grep -E "\breturn\b *\S+ *;" > /dev/null
+    echo "$solution" | grep -E "\breturn\b *\S+ *;" > /dev/null
 
-	if [ "$?" -eq 0 ]; then
-		printf "\nMentor notes warning: Found the explicit return statement.\n"
-	fi
+    if [ "$?" -eq 0 ]; then
+        printf "\nMentor notes warning: Found the explicit return statement.\n"
+    fi
 
-	if [[ $solution =~ f[63][42] ]]; then
-		printf "\nMentor notes warning: Found the usage of the f32/f64 type.\n"
-	fi
+    if [[ $solution =~ f[63][42] ]]; then
+        printf "\nMentor notes warning: Found the usage of the f32/f64 type.\n"
+    fi
 }
 
 
 analyze_solution () {
-	local exercise_name="${PWD##*/}"
+    local exercise_name="${PWD##*/}"
 
-	if [ "$exercise_name" == "pythagorean-triplet" ]; then
-		analyze_pythagorean_triplet
-	fi
+    if [ "$exercise_name" == "pythagorean-triplet" ]; then
+        analyze_pythagorean_triplet
+    fi
 }
 
 
 if [ "$#" -ne 1 ]; then
-	print_usage
+    print_usage
 
-	exit 1
+    exit 1
 fi
 
 solution_dir="$(download_solution "$1")"
@@ -113,11 +113,11 @@ solution_dir="$(download_solution "$1")"
 printf "Downloaded to\n%s\n" "$solution_dir"
 
 (
-	cd "$solution_dir"
+    cd "$solution_dir"
 
-	clean_solution_files
+    clean_solution_files
 
-	run_tests
+    run_tests
 
-	analyze_solution
+    analyze_solution
 )
