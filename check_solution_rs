@@ -1,4 +1,33 @@
 #!/usr/bin/env bash
 
 
-echo "Test"
+print_usage () {
+	echo -e "Usage:\n$(basename "$0") <UUID>"
+}
+
+
+download_solution () {
+	local solution_uuid="$1"
+
+	local solution_dir="$(exercism download --uuid="$solution_uuid" 2> /dev/null)"
+
+    local download_status="$?"
+
+	if [ "$download_status" -ne 0 ]; then
+		echo "Failed to download the exercise. Error code: "$download_status""
+
+		exit 1
+	fi
+
+	echo "$solution_dir"
+}
+
+if [ "$#" -ne 1 ]; then
+	print_usage
+
+	exit 1
+else
+	solution_dir="$(download_solution "$1")"
+
+	echo "Downloaded to the dir: $solution_dir"
+fi
