@@ -36,13 +36,29 @@ clean_solution_files () {
 }
 
 
-run_tests () {
-    cargo test --quiet > /dev/null 2>&1
+run_rust_tools () {
+    local test_results="$(cargo test --quiet > /dev/null 2>&1)"
 
     if [ "$?" -ne 0 ]; then
-        echo "Error: Some tests have failed!"
+        printf "Error: Some tests have failed!\n%s\n" "$test_results"
     else
-        echo "All the tests have passed!"
+        printf "All the tests have passed!\n"
+    fi
+
+    cargo clean
+
+    local clippy_warnings="$(cargo clippy --quiet > /dev/null 2>&1)"
+
+    if [ -n "$clippy_warnings" ]; then
+        printf "Clippy has produced some warnings:\n%s\n" "$clippy_warnings"
+    else
+        printf "No clippy warnings.\n"
+    fi
+
+    cargo fmt -- --quiet --check > /dev/null
+
+    if [ "$?" -ne 0 ]; then
+        printf "Warning: The solution is not formatted according to the rustfmt style guidelines.\n"
     fi
 }
 
@@ -117,7 +133,7 @@ printf "Downloaded to\n%s\n" "$solution_dir"
 
     clean_solution_files
 
-    run_tests
+    run_rust_tools
 
     analyze_solution
 )
