@@ -24,6 +24,8 @@ download_solution () {
 
 
 clean_solution_files () {
+    printf "...Removing the '#[ignore]' lines from the test suite file.\n"
+
     local exercise_name="${PWD##*/}"
 
     local test_file="tests/$exercise_name.rs"
@@ -31,12 +33,16 @@ clean_solution_files () {
     sed -i -e "/ignore/d" "$test_file"
 
     if [ "$?" -ne 0 ]; then
-        echo "Failed to clean the solution test file. Aborting."
+        printf "Error: Failed to clean the solution test file. Aborting.\n"
+
+        exit 1
     fi
 }
 
 
 run_rust_tools () {
+    printf "...Running tests.\n"
+
     local test_results="$(cargo test --quiet > /dev/null 2>&1)"
 
     if [ "$?" -ne 0 ]; then
@@ -47,13 +53,17 @@ run_rust_tools () {
 
     cargo clean
 
+    printf "...Running clippy.\n"
+
     local clippy_warnings="$(cargo clippy --quiet > /dev/null 2>&1)"
 
     if [ -n "$clippy_warnings" ]; then
-        printf "Clippy has produced some warnings:\n%s\n" "$clippy_warnings"
+        printf "Warning: Clippy has produced some warnings:\n%s\n" "$clippy_warnings"
     else
         printf "No clippy warnings.\n"
     fi
+
+    printf "...Running rustfmt.\n"
 
     cargo fmt -- --quiet --check > /dev/null
 
@@ -84,32 +94,34 @@ analyze_pythagorean_triplet () {
     local for_num="$(occurrences_number "$solution" "for")"
 
     if [ "$mut_num" -gt 1 ]; then
-        printf "\nWarning: big number of mutable variables (%s).\n" "$mut_num"
+        printf "Warning: big number of mutable variables (%s).\n" "$mut_num"
     fi
 
     if [ "$for_num" -gt 2 ]; then
-        printf "\nWarning: big number of for loops (%s).\n" "$for_num"
+        printf "Warning: big number of for loops (%s).\n" "$for_num"
     fi
 
     echo "$solution" | grep -E "(\b\w+\b) *\* *(\b\1\b)" > /dev/null
 
     if [ "$?" -eq 0 ]; then
-        printf "\nMentor notes warning: Found the occurrence of the 'a*a' construct.\n"
+        printf "Mentor notes warning: Found the occurrence of the 'a*a' construct.\n"
     fi
 
     echo "$solution" | grep -E "\breturn\b *\S+ *;" > /dev/null
 
     if [ "$?" -eq 0 ]; then
-        printf "\nMentor notes warning: Found the explicit return statement.\n"
+        printf "Mentor notes warning: Found the explicit return statement.\n"
     fi
 
     if [[ $solution =~ f[63][42] ]]; then
-        printf "\nMentor notes warning: Found the usage of the f32/f64 type.\n"
+        printf "Mentor notes warning: Found the usage of the f32/f64 type.\n"
     fi
 }
 
 
 analyze_solution () {
+    printf "...Analyzing the solution.\n"
+
     local exercise_name="${PWD##*/}"
 
     if [ "$exercise_name" == "pythagorean-triplet" ]; then
@@ -124,9 +136,11 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
+printf "...Downloading the solution.\n"
+
 solution_dir="$(download_solution "$1")"
 
-printf "Downloaded to\n%s\n" "$solution_dir"
+printf "Downloaded to %s\n" "$solution_dir"
 
 (
     cd "$solution_dir"
