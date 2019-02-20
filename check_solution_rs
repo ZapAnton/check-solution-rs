@@ -130,7 +130,7 @@ analyze_pythagorean_triplet () {
         print_message "mentor_warning" "Found the occurrence of the 'a*a' construct."
     fi
 
-    echo "$solution" | grep -E "\breturn\b *\S+ *;" > /dev/null
+    echo "$solution" | grep -E "\breturn\b *\S+" > /dev/null
 
     if [ "$?" -eq 0 ]; then
         print_message "mentor_warning" "Found the explicit return statement."
