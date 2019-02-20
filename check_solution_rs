@@ -76,7 +76,7 @@ run_rust_tools () {
 
     print_message "status" "Running clippy."
 
-    local clippy_warnings="$(cargo clippy --quiet > /dev/null 2>&1)"
+    local clippy_warnings="$(cargo clippy --quiet 2>&1)"
 
     if [ -n "$clippy_warnings" ]; then
         print_message "warning" "Clippy has produced some warnings:"
